@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Operaciones · Ponte Pilar{% endblock %}
+{% block heading %}Operaciones{% endblock %}
+{% block content %}
+<section class="filterbar">
+<form method="get" class="filter-form wide">
+  <div class="filter-group"><span>Período</span><input type="date" name="date_from" value="{{ filters.date_from }}"><span class="dash">—</span><input type="date" name="date_to" value="{{ filters.date_to }}"></div>
+  <select name="business_unit"><option value="">Todas las unidades</option><option value="bar" {% if filters.business_unit=='bar' %}selected{% endif %}>Bar</option><option value="salon" {% if filters.business_unit=='salon' %}selected{% endif %}>Salón</option><option value="catering" {% if filters.business_unit=='catering' %}selected{% endif %}>Catering</option></select>
+  <select name="operation_type"><option value="">Todos los tipos</option>{% for t in ['venta','compra','gasto','cobro','ingreso','devolucion','reserva','evento'] %}<option value="{{ t }}" {% if filters.operation_type==t %}selected{% endif %}>{{ t|title }}</option>{% endfor %}</select>
+  <input class="search-input" name="q" value="{{ filters.q }}" placeholder="Buscar evento, cliente o categoría">
+  <button class="filter-btn">Aplicar</button><a href="{{ url_for('operations_page') }}" class="reset-link">Limpiar</a>
+</form>
+</section>
+<section>
+  <div class="section-head"><div><span class="eyebrow">REGISTRO CENTRAL</span><h2>{{ operations|length }} movimientos</h2></div><span class="muted">Telegram y dashboard comparten esta misma base.</span></div>
+  <div class="table-shell large-table">
+  <table><thead><tr><th>ID</th><th>Fecha</th><th>Unidad</th><th>Tipo</th><th>Detalle</th><th class="num">Importe</th><th class="num">Costo</th><th>Origen</th><th></th></tr></thead>
+  <tbody>{% for row in operations %}<tr>
+    <td class="muted">#{{ row.id }}</td><td>{{ row.operation_date }}</td><td><span class="unit-tag {{ row.business_unit or 'none' }}">{{ row.business_unit or '—' }}</span></td><td>{{ row.operation_type|title }}</td>
+    <td><strong>{{ row.event_name or row.customer or row.category or 'Movimiento' }}</strong><span class="subline">{{ row.notes or '' }}</span></td><td class="num">{{ row.amount|money }}</td><td class="num muted">{{ row.cost|money }}</td><td class="muted">{{ '@'+row.telegram_username if row.telegram_username and row.telegram_username!='dashboard' else (row.telegram_username or 'Telegram') }}</td>
+    <td><form method="post" action="{{ url_for('delete_operation', operation_id=row.id) }}" onsubmit="return confirm('¿Eliminar esta operación?')"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="danger-link">Eliminar</button></form></td>
+  </tr>{% else %}<tr><td colspan="9" class="empty-cell">No encontramos operaciones con estos filtros.</td></tr>{% endfor %}</tbody></table>
+  </div>
+</section>
+{% endblock %}

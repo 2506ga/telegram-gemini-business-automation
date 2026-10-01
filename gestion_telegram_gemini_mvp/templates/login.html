@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ingresar · Ponte Pilar</title>
+  <link rel="icon" href="{{ url_for('static', filename='ponte-pilar.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body class="login-body">
+  <main class="login-shell">
+    <section class="login-brand-panel">
+      <img src="{{ url_for('static', filename='ponte-pilar.png') }}" alt="Ponte Pilar Catering">
+      <div><span class="eyebrow">GESTIÓN CENTRALIZADA</span><h1>Todo el negocio,<br>en un solo lugar.</h1></div>
+    </section>
+    <section class="login-form-panel">
+      <form class="login-form" method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ next_url }}">
+        <div class="login-mobile-logo"><img src="{{ url_for('static', filename='ponte-pilar.png') }}" alt="Ponte Pilar Catering"></div>
+        <span class="eyebrow">ACCESO AL DASHBOARD</span>
+        <h2>Bienvenido</h2>
+        <p>Ingresá con tus credenciales para continuar.</p>
+        {% if not configured %}<div class="login-alert">El acceso todavía no está configurado. Definí <code>DASHBOARD_PASSWORD_HASH</code> o <code>DASHBOARD_PASSWORD</code> en el archivo <code>.env</code>.</div>{% endif %}
+        {% for category, message in get_flashed_messages(with_categories=true) %}<div class="login-alert {{ category }}">{{ message }}</div>{% endfor %}
+        <label>Usuario<input name="username" autocomplete="username" required autofocus></label>
+        <label>Contraseña<input type="password" name="password" autocomplete="current-password" required></label>
+        <button class="primary-btn login-submit" {% if not configured %}disabled{% endif %}>Ingresar</button>
+        <small>La sesión se cierra automáticamente después de 12 horas.</small>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

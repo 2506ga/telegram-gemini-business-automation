@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Resumen · Ponte Pilar{% endblock %}
+{% block content %}
+<section class="filterbar">
+  <form method="get" class="filter-form">
+    <div class="filter-group"><span>Período</span><input type="date" name="date_from" value="{{ filters.date_from }}"><span class="dash">—</span><input type="date" name="date_to" value="{{ filters.date_to }}"></div>
+    <select name="business_unit"><option value="">Todas las unidades</option><option value="bar" {% if filters.business_unit=='bar' %}selected{% endif %}>Bar</option><option value="salon" {% if filters.business_unit=='salon' %}selected{% endif %}>Salón</option><option value="catering" {% if filters.business_unit=='catering' %}selected{% endif %}>Catering</option></select>
+    <select name="operation_type"><option value="">Todos los movimientos</option><option value="venta">Ventas</option><option value="compra">Compras</option><option value="gasto">Gastos</option><option value="reserva">Reservas</option><option value="evento">Eventos</option></select>
+    <button class="filter-btn">Aplicar</button>
+    <a href="/" class="reset-link">Limpiar</a>
+  </form>
+</section>
+
+<section class="metric-strip">
+  <div class="metric"><span>Ingresos</span><strong>{{ summary.income|money }}</strong><small class="{% if summary.income_delta and summary.income_delta >= 0 %}positive{% elif summary.income_delta %}negative{% endif %}">{% if summary.income_delta is not none %}{{ '%+.1f'|format(summary.income_delta) }}%{% else %}Sin período comparable{% endif %}</small></div>
+  <div class="metric"><span>Costos</span><strong>{{ summary.costs|money }}</strong><small class="{% if summary.costs_delta and summary.costs_delta <= 0 %}positive{% elif summary.costs_delta %}negative{% endif %}">{% if summary.costs_delta is not none %}{{ '%+.1f'|format(summary.costs_delta) }}%{% else %}Sin período comparable{% endif %}</small></div>
+  <div class="metric emphasis"><span>Resultado</span><strong>{{ summary.profit|money }}</strong><small>{{ summary.margin_pct|pct }} de margen</small></div>
+  <div class="metric"><span>Reservas confirmadas</span><strong>{{ summary.confirmed_reservations }}</strong><small>{{ summary.reservations }} totales en el período</small></div>
+</section>
+
+<section class="dashboard-grid">
+  <div class="panel hero-panel">
+    <div class="panel-head"><div><span class="eyebrow">EVOLUCIÓN</span><h2>Ingresos y costos</h2></div><div class="legend"><span><i class="dot income"></i>Ingresos</span><span><i class="dot costs"></i>Costos</span></div></div>
+    <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+  </div>
+
+  <aside class="panel unit-panel">
+    <div class="panel-head"><div><span class="eyebrow">RENTABILIDAD</span><h2>Por unidad</h2></div></div>
+    <div class="unit-list">
+      {% for unit in units %}
+      <div class="unit-row">
+        <div class="unit-title"><strong>{{ unit.business_unit|title }}</strong><span>{{ unit.records }} mov.</span></div>
+        <div class="unit-values"><strong>{{ unit.profit|money }}</strong><span>{{ unit.margin_pct|pct }}</span></div>
+        <div class="progress"><i style="width: {{ ([unit.margin_pct or 0, 100]|min)|abs }}%"></i></div>
+      </div>
+      {% else %}<div class="empty">Todavía no hay movimientos en este período.</div>{% endfor %}
+    </div>
+  </aside>
+</section>
+
+<section class="split-section">
+  <div>
+    <div class="section-head"><div><span class="eyebrow">ACTIVIDAD</span><h2>Últimos movimientos</h2></div><a href="{{ url_for('operations_page') }}">Ver todos →</a></div>
+    <div class="table-shell">
+      <table>
+        <thead><tr><th>Fecha</th><th>Unidad</th><th>Tipo</th><th>Detalle</th><th class="num">Importe</th><th class="num">Costo</th></tr></thead>
+        <tbody>
+        {% for row in operations[:10] %}
+          <tr><td>{{ row.operation_date }}</td><td><span class="unit-tag {{ row.business_unit or 'none' }}">{{ row.business_unit or '—' }}</span></td><td>{{ row.operation_type|title }}</td><td><strong>{{ row.event_name or row.customer or row.category or 'Movimiento' }}</strong><span class="subline">{{ row.notes or '' }}</span></td><td class="num">{{ row.amount|money }}</td><td class="num muted">{{ row.cost|money }}</td></tr>
+        {% else %}<tr><td colspan="6" class="empty-cell">No hay operaciones para mostrar.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-head"><div><span class="eyebrow">EVENTOS</span><h2>Rentabilidad</h2></div></div>
+    <div class="event-list">
+    {% for event in events[:6] %}
+      <div class="event-row"><div><strong>{{ event.event_name }}</strong><span>{{ event.customer or event.operation_date }}</span></div><div class="event-money"><strong>{{ event.profit|money }}</strong><span class="{% if event.profit >= 0 %}positive{% else %}negative{% endif %}">{{ event.margin_pct|pct }}</span></div></div>
+    {% else %}<div class="empty">Los eventos con nombre aparecerán acá.</div>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+const series = {{ series|tojson }};
+renderTrendChart(series);
+</script>
+{% endblock %}

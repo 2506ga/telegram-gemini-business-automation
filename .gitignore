@@ -1,0 +1,25 @@
+# Secretos y configuración local
+**/.env
+**/.env.*
+!**/.env.example
+
+# Bases y datos locales
+**/gestion.db
+**/gestion.db-*
+**/*.sqlite
+**/*.sqlite3
+
+# Python
+**/.venv/
+**/__pycache__/
+**/*.py[cod]
+
+# Logs, editores y sistema operativo
+**/*.log
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+GUIA_PRODUCCION.md
+gestion_telegram_gemini_mvp/PROMPT_PARA_CODEX.md
+gestion_telegram_gemini_mvp/static/ponte-pilar.png

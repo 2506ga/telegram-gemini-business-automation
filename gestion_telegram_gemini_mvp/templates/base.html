@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Ponte Pilar · Gestión{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='ponte-pilar.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" href="{{ url_for('dashboard') }}" aria-label="Ponte Pilar - Inicio">
+      <span class="brand-logo-wrap"><img class="brand-logo" src="{{ url_for('static', filename='ponte-pilar.png') }}" alt="Ponte Pilar Catering"></span>
+      <span class="brand-copy"><strong>Ponte Pilar</strong><span>Panel de gestión</span></span>
+    </a>
+    <nav class="nav">
+      <a class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}"><span>◫</span> Resumen</a>
+      <a class="nav-item {% if request.endpoint == 'operations_page' %}active{% endif %}" href="{{ url_for('operations_page') }}"><span>≡</span> Operaciones</a>
+      <div class="nav-label">UNIDADES</div>
+      <a class="nav-item" href="/?business_unit=bar"><span>●</span> Bar</a>
+      <a class="nav-item" href="/?business_unit=salon"><span>●</span> Salón</a>
+      <a class="nav-item" href="/?business_unit=catering"><span>●</span> Catering</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="status-dot"></div>
+      <div><strong>Sistema activo</strong><span>Telegram + Gemini + SQLite</span></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="mobile-menu" onclick="document.querySelector('.sidebar').classList.toggle('open')" aria-label="Abrir menú">☰</button>
+      <div class="topbar-title"><div class="eyebrow">CENTRO DE OPERACIONES</div><h1>{% block heading %}Resumen ejecutivo{% endblock %}</h1></div>
+      <div class="top-actions">
+        <button class="ghost-btn refresh-btn" onclick="location.reload()">↻ Actualizar</button>
+        <button class="primary-btn" onclick="openOperationModal()">＋ Nueva operación</button>
+        <form method="post" action="{{ url_for('logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="ghost-btn logout-btn" title="Cerrar sesión">Salir</button>
+        </form>
+      </div>
+    </header>
+
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+<div class="modal" id="operationModal" aria-hidden="true">
+  <div class="modal-backdrop" onclick="closeOperationModal()"></div>
+  <form class="modal-panel" method="post" action="{{ url_for('new_operation') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="modal-head">
+      <div><span class="eyebrow">CARGA MANUAL</span><h2>Nueva operación</h2></div>
+      <button type="button" class="icon-btn" onclick="closeOperationModal()">×</button>
+    </div>
+    <div class="form-grid">
+      <label>Fecha<input type="date" name="operation_date" value="{{ today if today is defined else '' }}" required></label>
+      <label>Tipo<select name="operation_type" required>
+        <option value="venta">Venta</option><option value="compra">Compra</option><option value="gasto">Gasto</option>
+        <option value="cobro">Cobro</option><option value="ingreso">Ingreso</option><option value="devolucion">Devolución</option>
+        <option value="reserva">Reserva</option><option value="evento">Evento</option><option value="otro">Otro</option>
+      </select></label>
+      <label>Unidad<select name="business_unit"><option value="">Sin asignar</option><option value="bar">Bar</option><option value="salon">Salón</option><option value="catering">Catering</option></select></label>
+      <label>Categoría<input name="category" placeholder="Bebidas, personal, insumos..."></label>
+      <label>Importe<input type="number" step="0.01" name="amount" value="0"></label>
+      <label>Costo asociado<input type="number" step="0.01" name="cost" value="0"></label>
+      <label>Evento<input name="event_name" placeholder="Ej. Casamiento López"></label>
+      <label>Cliente<input name="customer"></label>
+      <label>Personas<input type="number" name="people" min="0"></label>
+      <label>Estado reserva<select name="reservation_status"><option value="">—</option><option>pendiente</option><option>confirmada</option><option>cancelada</option></select></label>
+      <label>Medio de pago<input name="payment_method" placeholder="Efectivo, transferencia..."></label>
+      <label class="span-2">Notas<textarea name="notes" rows="3" placeholder="Detalle adicional"></textarea></label>
+    </div>
+    <div class="modal-actions"><button type="button" class="ghost-btn" onclick="closeOperationModal()">Cancelar</button><button class="primary-btn">Guardar operación</button></div>
+  </form>
+</div>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

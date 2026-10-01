@@ -1,0 +1,18 @@
+# Credenciales y configuracion local
+.env
+
+# Entorno virtual y cache de Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Datos y archivos locales de ejecucion
+gestion.db
+gestion.db-*
+*.log
+
+# Editores y sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
